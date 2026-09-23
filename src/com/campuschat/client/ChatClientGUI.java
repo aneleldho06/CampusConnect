@@ -12,28 +12,37 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.Insets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-/**
- * Swing chat window for one logged-in user.
- *
- * Public class name must match the filename:
- * ChatClientGUI.java -> public class ChatClientGUI
- */
 public class ChatClientGUI extends JFrame {
+
     private final String username;
     private final ChatClient client;
 
+    // Terminal colors
+    private static final Color BG = new Color(5, 10, 7);
+    private static final Color PANEL = new Color(8, 15, 10);
+    private static final Color GREEN = new Color(0, 255, 100);
+    private static final Color DARK_GREEN = new Color(0, 120, 45);
+    private static final Color DIM_GREEN = new Color(70, 160, 95);
+    private static final Color BORDER = new Color(0, 90, 35);
+
+    private static final Font TERMINAL_FONT =
+            new Font("Monospaced", Font.PLAIN, 14);
+
+    private static final Font TERMINAL_BOLD =
+            new Font("Monospaced", Font.BOLD, 14);
+
     private final JTextArea messageArea = new JTextArea();
     private final JTextField inputField = new JTextField();
-    private final JButton sendButton = new JButton("Send");
+    private final JButton sendButton = new JButton("[ SEND ]");
 
     private final DefaultListModel<String> usersModel =
             new DefaultListModel<>();
@@ -48,31 +57,29 @@ public class ChatClientGUI extends JFrame {
         this.username = username;
         this.client = client;
 
-        setTitle("CampusChat - " + username);
-        setSize(800, 530);
-        setMinimumSize(new Dimension(650, 400));
+        setTitle("CampusChat // " + username);
+        setSize(900, 600);
+        setMinimumSize(new Dimension(700, 450));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         buildInterface();
 
-        /*
-         * ChatClient calls this callback whenever a message arrives
-         * from the server.
-         */
         client.setMessageConsumer(this::handleServerMessage);
 
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(
-                    java.awt.event.WindowEvent event
-            ) {
+                    java.awt.event.WindowEvent event) {
+
                 client.close();
             }
         });
     }
 
     private void buildInterface() {
+
+        getContentPane().setBackground(BG);
         setLayout(new BorderLayout());
 
         add(createHeader(), BorderLayout.NORTH);
@@ -86,8 +93,16 @@ public class ChatClientGUI extends JFrame {
         JScrollPane usersScrollPane =
                 new JScrollPane(usersList);
 
+        messageScrollPane.setBorder(
+                BorderFactory.createLineBorder(BORDER)
+        );
+
+        usersScrollPane.setBorder(
+                BorderFactory.createLineBorder(BORDER)
+        );
+
         usersScrollPane.setPreferredSize(
-                new Dimension(180, 0)
+                new Dimension(210, 0)
         );
 
         JSplitPane splitPane = new JSplitPane(
@@ -96,31 +111,41 @@ public class ChatClientGUI extends JFrame {
                 usersScrollPane
         );
 
-        splitPane.setDividerLocation(610);
+        splitPane.setDividerLocation(670);
         splitPane.setResizeWeight(1.0);
 
+        splitPane.setBorder(
+                BorderFactory.createEmptyBorder()
+        );
+
+        splitPane.setBackground(BG);
+
         add(splitPane, BorderLayout.CENTER);
+
         add(createInputPanel(), BorderLayout.SOUTH);
     }
 
     private JPanelWithHeader createHeader() {
+
         JPanelWithHeader header = new JPanelWithHeader();
 
-        JLabel titleLabel = new JLabel("CampusChat");
-        titleLabel.setFont(
-                new Font("SansSerif", Font.BOLD, 20)
-        );
-        titleLabel.setForeground(Color.WHITE);
+        JLabel titleLabel =
+                new JLabel("  CAMPUSCHAT // TERMINAL");
 
-        JLabel userLabel = new JLabel(
-                "Logged in as: " + username
+        titleLabel.setFont(
+                new Font("Monospaced", Font.BOLD, 19)
         );
+
+        titleLabel.setForeground(GREEN);
+
+        JLabel userLabel =
+                new JLabel("● ONLINE  //  " + username + "  ");
+
         userLabel.setFont(
-                new Font("SansSerif", Font.PLAIN, 13)
+                new Font("Monospaced", Font.BOLD, 13)
         );
-        userLabel.setForeground(
-                new Color(225, 235, 250)
-        );
+
+        userLabel.setForeground(GREEN);
 
         header.add(titleLabel);
         header.add(userLabel);
@@ -129,52 +154,71 @@ public class ChatClientGUI extends JFrame {
     }
 
     private void configureMessageArea() {
+
         messageArea.setEditable(false);
         messageArea.setLineWrap(true);
         messageArea.setWrapStyleWord(true);
-        messageArea.setFont(
-                new Font("SansSerif", Font.PLAIN, 14)
-        );
-        messageArea.setBackground(Color.WHITE);
+
+        messageArea.setFont(TERMINAL_FONT);
+
+        messageArea.setForeground(GREEN);
+        messageArea.setBackground(BG);
+
+        messageArea.setCaretColor(GREEN);
+
         messageArea.setBorder(
                 BorderFactory.createEmptyBorder(
-                        10,
-                        10,
-                        10,
-                        10
+                        15,
+                        15,
+                        15,
+                        15
                 )
         );
     }
 
     private void configureUsersList() {
+
         usersList.setSelectionMode(
                 ListSelectionModel.SINGLE_SELECTION
         );
 
-        usersList.setFont(
-                new Font("SansSerif", Font.PLAIN, 14)
-        );
+        usersList.setFont(TERMINAL_FONT);
+
+        usersList.setForeground(GREEN);
+        usersList.setBackground(PANEL);
+
+        usersList.setSelectionBackground(DARK_GREEN);
+        usersList.setSelectionForeground(Color.WHITE);
 
         usersList.setBorder(
                 BorderFactory.createTitledBorder(
-                        "Online users"
+                        BorderFactory.createLineBorder(BORDER),
+                        " ONLINE_USERS ",
+                        javax.swing.border.TitledBorder.LEFT,
+                        javax.swing.border.TitledBorder.TOP,
+                        TERMINAL_BOLD,
+                        GREEN
                 )
         );
 
         usersList.addListSelectionListener(event -> {
+
             if (!event.getValueIsAdjusting()) {
+
                 String selectedUser =
                         usersList.getSelectedValue();
 
                 if (selectedUser != null
                         && !selectedUser.equals(username)) {
+
                     inputField.setToolTipText(
-                            "Send a private message to "
-                                    + selectedUser
+                            "PRIVATE MESSAGE → " + selectedUser
                     );
+
                 } else {
+
                     inputField.setToolTipText(
-                            "Send a public message"
+                            "PUBLIC MESSAGE → ALL USERS"
                     );
                 }
             }
@@ -182,44 +226,74 @@ public class ChatClientGUI extends JFrame {
     }
 
     private javax.swing.JPanel createInputPanel() {
+
         javax.swing.JPanel panel =
                 new javax.swing.JPanel(new BorderLayout(8, 8));
 
+        panel.setBackground(PANEL);
+
         panel.setBorder(
                 BorderFactory.createEmptyBorder(
-                        8,
-                        8,
-                        8,
-                        8
+                        10,
+                        10,
+                        10,
+                        10
                 )
         );
 
-        inputField.setFont(
-                new Font("SansSerif", Font.PLAIN, 14)
+        inputField.setFont(TERMINAL_FONT);
+
+        inputField.setForeground(GREEN);
+        inputField.setBackground(BG);
+
+        inputField.setCaretColor(GREEN);
+
+        inputField.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(BORDER),
+                        BorderFactory.createEmptyBorder(
+                                8,
+                                10,
+                                8,
+                                10
+                        )
+                )
         );
 
         inputField.setPreferredSize(
-                new Dimension(0, 40)
+                new Dimension(0, 42)
+        );
+
+        inputField.setToolTipText(
+                "PUBLIC MESSAGE → ALL USERS"
         );
 
         sendButton.setPreferredSize(
-                new Dimension(90, 40)
+                new Dimension(100, 42)
         );
 
-        sendButton.setFont(
-                new Font("SansSerif", Font.BOLD, 13)
+        sendButton.setFont(TERMINAL_BOLD);
+
+        sendButton.setForeground(GREEN);
+        sendButton.setBackground(BG);
+
+        sendButton.setBorder(
+                BorderFactory.createLineBorder(
+                        DARK_GREEN
+                )
         );
 
-        sendButton.setBackground(
-                new Color(55, 115, 220)
-        );
-
-        sendButton.setForeground(Color.WHITE);
         sendButton.setFocusPainted(false);
 
-        sendButton.addActionListener(event -> sendMessage());
+        sendButton.setOpaque(true);
 
-        inputField.addActionListener(event -> sendMessage());
+        sendButton.addActionListener(
+                event -> sendMessage()
+        );
+
+        inputField.addActionListener(
+                event -> sendMessage()
+        );
 
         panel.add(inputField, BorderLayout.CENTER);
         panel.add(sendButton, BorderLayout.EAST);
@@ -228,25 +302,27 @@ public class ChatClientGUI extends JFrame {
     }
 
     private void sendMessage() {
-        String message = inputField.getText().trim();
+
+        String message =
+                inputField.getText().trim();
 
         if (message.isEmpty()) {
             return;
         }
 
-        String selectedUser = usersList.getSelectedValue();
+        String selectedUser =
+                usersList.getSelectedValue();
 
-        /*
-         * If another online user is selected, send a private message.
-         * Otherwise, send a public broadcast message.
-         */
         if (selectedUser != null
                 && !selectedUser.equals(username)) {
+
             client.sendPrivateMessage(
                     selectedUser,
                     message
             );
+
         } else {
+
             client.sendPublicMessage(message);
         }
 
@@ -254,25 +330,23 @@ public class ChatClientGUI extends JFrame {
         inputField.requestFocusInWindow();
     }
 
-    /**
-     * Handles messages received from the server.
-     *
-     * Network code runs on a background thread, so all Swing updates
-     * are placed on the Event Dispatch Thread using invokeLater.
-     */
     private void handleServerMessage(String message) {
+
         SwingUtilities.invokeLater(() -> {
+
             if (message == null || message.isEmpty()) {
                 return;
             }
 
-            String[] parts = message.split("\\|", -1);
+            String[] parts =
+                    message.split("\\|", -1);
 
             if (parts.length == 0) {
                 return;
             }
 
             switch (parts[0]) {
+
                 case "MESSAGE":
                     handlePublicMessage(parts);
                     break;
@@ -282,42 +356,52 @@ public class ChatClientGUI extends JFrame {
                     break;
 
                 case "SYSTEM":
+
                     if (parts.length >= 2) {
                         appendSystemMessage(parts[1]);
                     }
+
                     break;
 
                 case "USERS":
+
                     if (parts.length >= 2) {
                         updateUsers(parts[1]);
                     }
+
                     break;
 
                 case "ERROR":
+
                     if (parts.length >= 2) {
                         appendSystemMessage(
-                                "Error: " + parts[1]
+                                "ERROR: " + parts[1]
                         );
                     }
+
                     break;
 
                 case "CONNECTION_CLOSED":
+
                     appendSystemMessage(
                             "Disconnected from server."
                     );
 
                     sendButton.setEnabled(false);
                     inputField.setEnabled(false);
+
                     break;
 
                 default:
+
                     appendSystemMessage(message);
-                    break;
             }
         });
     }
 
-    private void handlePublicMessage(String[] parts) {
+    private void handlePublicMessage(
+            String[] parts) {
+
         if (parts.length < 3) {
             return;
         }
@@ -333,7 +417,9 @@ public class ChatClientGUI extends JFrame {
         );
     }
 
-    private void handlePrivateMessage(String[] parts) {
+    private void handlePrivateMessage(
+            String[] parts) {
+
         if (parts.length < 4) {
             return;
         }
@@ -344,7 +430,7 @@ public class ChatClientGUI extends JFrame {
 
         appendMessage(
                 "[" + currentTime() + "] "
-                        + "[Private] "
+                        + "[PRIVATE] "
                         + sender
                         + " -> "
                         + recipient
@@ -353,11 +439,14 @@ public class ChatClientGUI extends JFrame {
         );
     }
 
-    private void updateUsers(String commaSeparatedUsers) {
+    private void updateUsers(
+            String commaSeparatedUsers) {
+
         usersModel.clear();
 
         if (commaSeparatedUsers == null
                 || commaSeparatedUsers.isBlank()) {
+
             return;
         }
 
@@ -365,65 +454,82 @@ public class ChatClientGUI extends JFrame {
                 commaSeparatedUsers.split(",");
 
         for (String user : users) {
+
             if (!user.isBlank()) {
-                usersModel.addElement(user);
+
+                usersModel.addElement(
+                        "> " + user
+                );
             }
         }
     }
 
-    private void appendMessage(String message) {
-        messageArea.append(message);
-        messageArea.append("\n");
+    private void appendMessage(
+            String message) {
+
+        messageArea.append(
+                message + "\n"
+        );
 
         messageArea.setCaretPosition(
                 messageArea.getDocument().getLength()
         );
     }
 
-    private void appendSystemMessage(String message) {
+    private void appendSystemMessage(
+            String message) {
+
         appendMessage(
-                "[" + currentTime() + "] * " + message
+                "[" + currentTime() + "] "
+                        + "[SYSTEM] "
+                        + message
         );
     }
 
     private String currentTime() {
-        return timeFormat.format(new Date());
+
+        return timeFormat.format(
+                new Date()
+        );
     }
 
-    /**
-     * Small header panel with a blue background.
-     */
     private static class JPanelWithHeader
             extends javax.swing.JPanel {
 
         JPanelWithHeader() {
+
             super(new GridLayout(1, 2));
 
-            setBackground(
-                    new Color(40, 85, 160)
-            );
+            setBackground(BG);
 
             setBorder(
-                    BorderFactory.createEmptyBorder(
-                            10,
-                            12,
-                            10,
-                            12
+                    BorderFactory.createMatteBorder(
+                            0,
+                            0,
+                            1,
+                            0,
+                            DARK_GREEN
                     )
             );
         }
 
         @Override
-        public java.awt.Component add(java.awt.Component component) {
+        public java.awt.Component add(
+                java.awt.Component component) {
+
             if (getComponentCount() == 0) {
+
                 return super.add(component);
+
             } else {
+
                 javax.swing.JPanel rightPanel =
                         new javax.swing.JPanel(
                                 new BorderLayout()
                         );
 
                 rightPanel.setOpaque(false);
+
                 rightPanel.add(
                         component,
                         BorderLayout.EAST
